@@ -20,6 +20,7 @@ func main() {
 	router := gin.Default()
 
 	// Setup routes
+	routes.SetupAuthRoutes(router)
 	routes.SetupNoteRoutes(router)
 
 	// Start the server
