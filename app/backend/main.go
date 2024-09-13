@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// Load environment variables
-	err := godotenv.Load()
+	err := godotenv.Overload()
 	if err != nil {
 		panic("Error loading .env file")
 	}
