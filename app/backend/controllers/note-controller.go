@@ -1,11 +1,10 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/matthewwangg/papertrail-backend/database"
 	"github.com/matthewwangg/papertrail-backend/models"
+	"net/http"
 )
 
 // GetNotes retrieves all notes
@@ -38,6 +37,16 @@ func CreateNote(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Get the user from the context
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found in context"})
+		return
+	}
+
+	newNote.UserID = user.(models.User).ID
+
 	result := database.DB.Create(&newNote)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
