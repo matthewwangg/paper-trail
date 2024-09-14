@@ -32,7 +32,7 @@ CREATE_RESPONSE=$(curl -s -X POST $BASE_URL/tasks \
 echo "Task created: $CREATE_RESPONSE"
 
 # Extract the task ID
-TASK_ID=$(echo $CREATE_RESPONSE | jq -r '.id')
+TASK_ID=$(echo $CREATE_RESPONSE | jq -r '.ID')
 
 if [ "$TASK_ID" == "null" ] || [ -z "$TASK_ID" ]; then
   echo "Failed to create task."

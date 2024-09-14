@@ -14,6 +14,7 @@ const (
 
 type Task struct {
 	gorm.Model
+	TaskID      uint       `gorm:"primaryKey;autoIncrement" json:"task_id"` // Explicit task_id field
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	Status      TaskStatus `json:"status"`
