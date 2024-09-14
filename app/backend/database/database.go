@@ -32,9 +32,10 @@ func ConnectDatabase() {
 	fmt.Println("Database connection successfully opened")
 
 	// Migrate the schema
-	err = DB.AutoMigrate(&models.Note{})
+	err = DB.AutoMigrate(&models.User{}, &models.Note{}, &models.Task{})
 	if err != nil {
 		panic("Failed to migrate database!")
 	}
 	fmt.Println("Database Migrated")
+
 }
