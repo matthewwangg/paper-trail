@@ -12,7 +12,7 @@ import (
 func GetTasks(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	var tasks []models.Task
-	result := database.DB.Where("user_id = ?", user.ID).Find(&tasks)
+	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
@@ -25,7 +25,7 @@ func GetTaskByID(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	id := c.Param("id")
 	var task models.Task
-	result := database.DB.Where("user_id = ?", user.ID).First(&task, id)
+	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
@@ -36,40 +36,99 @@ func GetTaskByID(c *gin.Context) {
 // CreateTask adds a new task
 func CreateTask(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
-	var newTask models.Task
+	var newTask struct {
+		Title       string              `json:"title" binding:"required"`
+		Description string              `json:"description"`
+		Priority    models.TaskPriority `json:"priority"`
+		Tags        []string            `json:"tags"`
+	}
+
 	if err := c.ShouldBindJSON(&newTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newTask.UserID = user.ID
-	newTask.Status = models.StatusTodo // Default status
-	result := database.DB.Create(&newTask)
+
+	// Prepare the task model
+	task := models.Task{
+		Title:       newTask.Title,
+		Description: newTask.Description,
+		Status:      models.StatusTodo,
+		Priority:    newTask.Priority,
+		UserID:      user.ID,
+	}
+
+	// Handle tags
+	if len(newTask.Tags) > 0 {
+		var tags []models.Tag
+		for _, tagName := range newTask.Tags {
+			var tag models.Tag
+			// Find or create the tag
+			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName})
+			tags = append(tags, tag)
+		}
+		task.Tags = tags
+	}
+
+	// Save the task to the database
+	result := database.DB.Create(&task)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, newTask)
+
+	c.JSON(http.StatusCreated, task)
 }
 
 // UpdateTask modifies an existing task
 func UpdateTask(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	id := c.Param("id")
+
 	var task models.Task
-	result := database.DB.Where("user_id = ?", user.ID).First(&task, id)
+	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
 		return
 	}
-	if err := c.ShouldBindJSON(&task); err != nil {
+
+	var updatedTask struct {
+		Title       string              `json:"title"`
+		Description string              `json:"description"`
+		Status      models.TaskStatus   `json:"status"`
+		Priority    models.TaskPriority `json:"priority"`
+		Tags        []string            `json:"tags"`
+	}
+
+	if err := c.ShouldBindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Update task fields
+	task.Title = updatedTask.Title
+	task.Description = updatedTask.Description
+	task.Status = updatedTask.Status
+	task.Priority = updatedTask.Priority
+
+	// Handle tags (Clear existing tags and re-assign)
+	if len(updatedTask.Tags) > 0 {
+		var tags []models.Tag
+		for _, tagName := range updatedTask.Tags {
+			var tag models.Tag
+			// Find or create the tag
+			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName})
+			tags = append(tags, tag)
+		}
+		task.Tags = tags
+	}
+
+	// Save the updated task
 	saveResult := database.DB.Save(&task)
 	if saveResult.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": saveResult.Error.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, task)
 }
 
