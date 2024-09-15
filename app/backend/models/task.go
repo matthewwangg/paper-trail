@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Define task status options
 type TaskStatus string
 
 const (
@@ -12,11 +13,23 @@ const (
 	StatusDone       TaskStatus = "Done"
 )
 
+// Define task priority options
+type TaskPriority string
+
+const (
+	PriorityLow    TaskPriority = "low"
+	PriorityMedium TaskPriority = "medium"
+	PriorityHigh   TaskPriority = "high"
+)
+
+// Task model with priority and tags
 type Task struct {
 	gorm.Model
-	TaskID      uint       `gorm:"primaryKey;autoIncrement" json:"task_id"` // Explicit task_id field
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Status      TaskStatus `json:"status"`
-	UserID      uint       `json:"user_id"`
+	TaskID      uint         `gorm:"primaryKey;autoIncrement" json:"task_id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	Status      TaskStatus   `json:"status"`
+	Priority    TaskPriority `json:"priority"`
+	UserID      uint         `json:"user_id"`
+	Tags        []Tag        `gorm:"many2many:task_tags" json:"tags"`
 }
