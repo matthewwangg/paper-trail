@@ -23,11 +23,20 @@ fi
 
 echo "Logged in successfully."
 
-# Create a new task
+# Prompt for task priority and tags
+read -p "Enter task priority (low, medium, high): " PRIORITY
+read -p "Enter task tags (comma separated): " TAGS
+IFS=',' read -r -a TAG_ARRAY <<< "$TAGS"
+
+# Convert the TAG_ARRAY to a JSON array of strings
+TAG_JSON_ARRAY=$(printf ',\"%s\"' "${TAG_ARRAY[@]}")
+TAG_JSON_ARRAY="[${TAG_JSON_ARRAY:1}]"
+
+# Create a new task with priority and tags
 CREATE_RESPONSE=$(curl -s -X POST $BASE_URL/tasks \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: application/json" \
-     -d '{"title":"Task 1","description":"First task description"}')
+     -d "{\"title\":\"Task 1\",\"description\":\"First task description\",\"priority\":\"$PRIORITY\",\"tags\":$TAG_JSON_ARRAY}")
 
 echo "Task created: $CREATE_RESPONSE"
 
@@ -44,11 +53,21 @@ echo "Retrieving all tasks:"
 curl -s -X GET $BASE_URL/tasks \
      -H "Authorization: Bearer $TOKEN" | jq
 
-# Update the task
+# Update the task (change title, description, priority, and tags)
+read -p "Enter new task title: " NEW_TITLE
+read -p "Enter new task description: " NEW_DESCRIPTION
+read -p "Enter new task priority (low, medium, high): " NEW_PRIORITY
+read -p "Enter new task tags (comma separated): " NEW_TAGS
+IFS=',' read -r -a NEW_TAG_ARRAY <<< "$NEW_TAGS"
+
+# Convert the NEW_TAG_ARRAY to a JSON array of strings
+NEW_TAG_JSON_ARRAY=$(printf ',\"%s\"' "${NEW_TAG_ARRAY[@]}")
+NEW_TAG_JSON_ARRAY="[${NEW_TAG_JSON_ARRAY:1}]"
+
 UPDATE_RESPONSE=$(curl -s -X PUT $BASE_URL/tasks/$TASK_ID \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: application/json" \
-     -d '{"title":"Updated Task 1","description":"Updated description"}')
+     -d "{\"title\":\"$NEW_TITLE\",\"description\":\"$NEW_DESCRIPTION\",\"priority\":\"$NEW_PRIORITY\",\"tags\":$NEW_TAG_JSON_ARRAY}")
 
 echo "Task updated: $UPDATE_RESPONSE"
 

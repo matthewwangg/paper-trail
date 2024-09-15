@@ -25,7 +25,6 @@ const (
 // Task model with priority and tags
 type Task struct {
 	gorm.Model
-	TaskID      uint         `gorm:"primaryKey;autoIncrement" json:"task_id"`
 	Title       string       `json:"title"`
 	Description string       `json:"description"`
 	Status      TaskStatus   `json:"status"`
