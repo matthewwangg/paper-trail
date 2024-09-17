@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../services/api';
+
 
 interface Task {
     id: number;
@@ -12,18 +13,14 @@ const TasksPage: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const API_URL = 'http://localhost:8080';
 
     useEffect(() => {
         fetchTasks();
     }, []);
 
     const fetchTasks = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const response = await axios.get(`${API_URL}/tasks`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axios.get(`/tasks`);
             setTasks(response.data);
         } catch (error) {
             console.error('Fetch tasks error:', error);
@@ -32,12 +29,10 @@ const TasksPage: React.FC = () => {
 
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
         try {
             await axios.post(
-                `${API_URL}/tasks`,
+                `/tasks`,
                 { title, description },
-                { headers: { Authorization: `Bearer ${token}` } }
             );
             setTitle('');
             setDescription('');
@@ -48,12 +43,10 @@ const TasksPage: React.FC = () => {
     };
 
     const handleUpdateTaskStatus = async (id: number, status: string) => {
-        const token = localStorage.getItem('token');
         try {
             await axios.put(
-                `${API_URL}/tasks/${id}/status`,
-                { status },
-                { headers: { Authorization: `Bearer ${token}` } }
+                `/tasks/${id}/status`,
+                { status }
             );
             fetchTasks();
         } catch (error) {
@@ -62,11 +55,8 @@ const TasksPage: React.FC = () => {
     };
 
     const handleDeleteTask = async (id: number) => {
-        const token = localStorage.getItem('token');
         try {
-            await axios.delete(`${API_URL}/tasks/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.delete(`/tasks/${id}`);
             fetchTasks();
         } catch (error) {
             console.error('Delete task error:', error);

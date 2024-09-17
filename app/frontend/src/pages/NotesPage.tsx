@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../services/api';
 
 interface Note {
     id: number;
@@ -11,18 +11,14 @@ const NotesPage: React.FC = () => {
     const [notes, setNotes] = useState<Note[]>([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
-    const API_URL = 'http://localhost:8080';
 
     useEffect(() => {
         fetchNotes();
     }, []);
 
     const fetchNotes = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const response = await axios.get(`${API_URL}/notes`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const response = await axios.get(`/notes`);
             setNotes(response.data);
         } catch (error) {
             console.error('Fetch notes error:', error);
@@ -31,12 +27,10 @@ const NotesPage: React.FC = () => {
 
     const handleAddNote = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
         try {
             await axios.post(
-                `${API_URL}/notes`,
-                { title, content },
-                { headers: { Authorization: `Bearer ${token}` } }
+                `/notes`,
+                { title, content }
             );
             setTitle('');
             setContent('');
@@ -47,11 +41,8 @@ const NotesPage: React.FC = () => {
     };
 
     const handleDeleteNote = async (id: number) => {
-        const token = localStorage.getItem('token');
         try {
-            await axios.delete(`${API_URL}/notes/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await axios.delete(`/notes/${id}`);
             fetchNotes();
         } catch (error) {
             console.error('Delete note error:', error);
