@@ -112,6 +112,44 @@ func GetTaskByID(c *gin.Context) {
 	c.JSON(http.StatusOK, task)
 }
 
+// GetTasksGroupedByPriority retrieves tasks grouped by priority
+func GetTasksGroupedByPriority(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	var tasks []models.Task
+
+	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	groupedTasks := make(map[models.TaskPriority][]models.Task)
+	for _, task := range tasks {
+		groupedTasks[task.Priority] = append(groupedTasks[task.Priority], task)
+	}
+
+	c.JSON(http.StatusOK, groupedTasks)
+}
+
+// GetTasksGroupedByStatus retrieves tasks grouped by status
+func GetTasksGroupedByStatus(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	var tasks []models.Task
+
+	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	groupedTasks := make(map[models.TaskStatus][]models.Task)
+	for _, task := range tasks {
+		groupedTasks[task.Status] = append(groupedTasks[task.Status], task)
+	}
+
+	c.JSON(http.StatusOK, groupedTasks)
+}
+
 // CreateTask adds a new task
 func CreateTask(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
