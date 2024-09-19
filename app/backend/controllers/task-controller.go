@@ -1,20 +1,26 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/matthewwangg/papertrail-backend/database"
 	"github.com/matthewwangg/papertrail-backend/models"
 )
 
-// GetTasks retrieves tasks for the authenticated user, optionally filtered by status and priority
+// GetTasks retrieves tasks for the authenticated user, with optional filtering, sorting, and pagination
 func GetTasks(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 
 	// Retrieve query parameters
 	statusParam := c.Query("status")
 	priorityParam := c.Query("priority")
+	sortBy := c.Query("sort_by")
+	order := c.Query("order")
+	pageParam := c.Query("page")
+	limitParam := c.Query("limit")
 
 	var tasks []models.Task
 	query := database.DB.Preload("Tags").Where("user_id = ?", user.ID)
@@ -46,6 +52,42 @@ func GetTasks(c *gin.Context) {
 		}
 		query = query.Where("priority = ?", priority)
 	}
+
+	// Apply sorting
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	if order == "" {
+		order = "desc"
+	} else if order != "asc" && order != "desc" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order parameter"})
+		return
+	}
+	query = query.Order(fmt.Sprintf("%s %s", sortBy, order))
+
+	// Apply pagination
+	var page, limit int
+	var err error
+	if pageParam != "" {
+		page, err = strconv.Atoi(pageParam)
+		if err != nil || page <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
+			return
+		}
+	} else {
+		page = 1
+	}
+	if limitParam != "" {
+		limit, err = strconv.Atoi(limitParam)
+		if err != nil || limit <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
+			return
+		}
+	} else {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+	query = query.Offset(offset).Limit(limit)
 
 	// Execute the query
 	result := query.Find(&tasks)
