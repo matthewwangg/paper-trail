@@ -8,15 +8,52 @@ import (
 	"github.com/matthewwangg/papertrail-backend/models"
 )
 
-// GetTasks retrieves all tasks for the authenticated user
+// GetTasks retrieves tasks for the authenticated user, optionally filtered by status and priority
 func GetTasks(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
+
+	// Retrieve query parameters
+	statusParam := c.Query("status")
+	priorityParam := c.Query("priority")
+
 	var tasks []models.Task
-	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
+	query := database.DB.Preload("Tags").Where("user_id = ?", user.ID)
+
+	// Apply status filter if provided
+	if statusParam != "" {
+		// Validate status
+		var status models.TaskStatus
+		switch statusParam {
+		case string(models.StatusTodo), string(models.StatusInProgress), string(models.StatusDone):
+			status = models.TaskStatus(statusParam)
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
+			return
+		}
+		query = query.Where("status = ?", status)
+	}
+
+	// Apply priority filter if provided
+	if priorityParam != "" {
+		// Validate priority
+		var priority models.TaskPriority
+		switch priorityParam {
+		case string(models.PriorityLow), string(models.PriorityMedium), string(models.PriorityHigh):
+			priority = models.TaskPriority(priorityParam)
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid priority"})
+			return
+		}
+		query = query.Where("priority = ?", priority)
+	}
+
+	// Execute the query
+	result := query.Find(&tasks)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, tasks)
 }
 
