@@ -11,6 +11,7 @@ const NotesPage: React.FC = () => {
     const [notes, setNotes] = useState<Note[]>([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
+    const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
 
     useEffect(() => {
         fetchNotes();
@@ -24,6 +25,19 @@ const NotesPage: React.FC = () => {
             console.error('Fetch notes error:', error);
         }
     };
+
+    const fetchNoteById = async (id: number) => {
+        try {
+            const response = await axios.get(`/notes/${id}`);
+            const note = response.data;
+            setTitle(note.title);
+            setContent(note.content);
+            setSelectedNoteId(note.id);
+        } catch (error) {
+            console.error('Fetch note by ID error:', error);
+        }
+    };
+
 
     const handleAddNote = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,6 +54,21 @@ const NotesPage: React.FC = () => {
         }
     };
 
+    const handleUpdateNote = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (selectedNoteId !== null) {
+            try {
+                await axios.put(`/notes/${selectedNoteId}`, { title, content });
+                setTitle('');
+                setContent('');
+                setSelectedNoteId(null);  
+                fetchNotes();
+            } catch (error) {
+                console.error('Update note error:', error);
+            }
+        }
+    };
+
     const handleDeleteNote = async (id: number) => {
         try {
             await axios.delete(`/notes/${id}`);
@@ -52,7 +81,8 @@ const NotesPage: React.FC = () => {
     return (
         <div>
             <h2>Notes</h2>
-            <form onSubmit={handleAddNote}>
+
+            <form onSubmit={(e) => selectedNoteId ? handleUpdateNote(e) : handleAddNote(e)}>
                 <div>
                     <input
                         type="text"
@@ -63,20 +93,24 @@ const NotesPage: React.FC = () => {
                     />
                 </div>
                 <div>
-          <textarea
-              placeholder="Note Content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-          ></textarea>
+                    <textarea
+                        placeholder="Note Content"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        required
+                    ></textarea>
                 </div>
-                <button type="submit">Add Note</button>
+                <button type="submit">
+                    {selectedNoteId ? 'Update Note' : 'Add Note'}
+                </button>
             </form>
+
             <ul>
                 {notes.map((note) => (
                     <li key={note.id}>
                         <strong>{note.title}</strong>
                         <p>{note.content}</p>
+                        <button onClick={() => fetchNoteById(note.id)}>Edit</button>
                         <button onClick={() => handleDeleteNote(note.id)}>Delete</button>
                     </li>
                 ))}
