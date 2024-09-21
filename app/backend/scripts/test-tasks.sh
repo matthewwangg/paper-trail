@@ -41,7 +41,7 @@ CREATE_RESPONSE=$(curl -s -X POST $BASE_URL/tasks \
 echo "Task created: $CREATE_RESPONSE"
 
 # Extract the task ID
-TASK_ID=$(echo $CREATE_RESPONSE | jq -r '.ID')
+TASK_ID=$(echo $CREATE_RESPONSE | jq -r '.id')
 
 if [ "$TASK_ID" == "null" ] || [ -z "$TASK_ID" ]; then
   echo "Failed to create task."
@@ -52,6 +52,22 @@ fi
 echo "Retrieving all tasks:"
 curl -s -X GET $BASE_URL/tasks \
      -H "Authorization: Bearer $TOKEN" | jq
+
+# Get tasks grouped by status
+echo "Retrieving tasks grouped by status:"
+curl -s -X GET $BASE_URL/tasks/grouped/status \
+     -H "Authorization: Bearer $TOKEN" | jq
+
+# Get tasks grouped by priority
+echo "Retrieving tasks grouped by priority:"
+curl -s -X GET $BASE_URL/tasks/grouped/priority \
+     -H "Authorization: Bearer $TOKEN" | jq
+
+# Get task by ID
+echo "Retrieving task by ID:"
+GET_TASK_RESPONSE=$(curl -s -X GET $BASE_URL/tasks/$TASK_ID \
+     -H "Authorization: Bearer $TOKEN")
+echo "Task details: $GET_TASK_RESPONSE"
 
 # Update the task (change title, description, priority, and tags)
 read -p "Enter new task title: " NEW_TITLE
@@ -78,6 +94,11 @@ STATUS_RESPONSE=$(curl -s -X PUT $BASE_URL/tasks/$TASK_ID/status \
      -d '{"status":"In Progress"}')
 
 echo "Task status updated: $STATUS_RESPONSE"
+
+# Retrieve tasks with filtering (e.g., priority=high)
+echo "Retrieving tasks with priority=high:"
+curl -s -X GET $BASE_URL/tasks?priority=high \
+     -H "Authorization: Bearer $TOKEN" | jq
 
 # Delete the task
 DELETE_RESPONSE=$(curl -s -X DELETE $BASE_URL/tasks/$TASK_ID \
