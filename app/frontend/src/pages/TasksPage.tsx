@@ -22,9 +22,7 @@ const TasksPage: React.FC = () => {
     const [viewMode, setViewMode] = useState<'status' | 'priority'>('status');
 
     useEffect(() => {
-        fetchTasks();
-        fetchGroupedTasksByStatus();
-        fetchGroupedTasksByPriority();
+        refreshData();
     }, []);
 
     const fetchTasks = async () => {
@@ -47,7 +45,6 @@ const TasksPage: React.FC = () => {
             console.error('Fetch task by ID error:', error);
         }
     };
-
 
     const fetchGroupedTasksByStatus = async () => {
         try {
@@ -98,7 +95,6 @@ const TasksPage: React.FC = () => {
         }
     };
 
-    // Delete a task
     const handleDeleteTask = async (id: number) => {
         try {
             await axios.delete(`/tasks/${id}`);
@@ -132,7 +128,6 @@ const TasksPage: React.FC = () => {
                 ))}
             </div>
         ));
-
 
     return (
         <>

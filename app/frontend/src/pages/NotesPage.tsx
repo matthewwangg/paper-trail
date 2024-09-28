@@ -37,8 +37,7 @@ const NotesPage: React.FC = () => {
             console.error('Fetch note by ID error:', error);
         }
     };
-
-
+    
     const handleAddNote = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
