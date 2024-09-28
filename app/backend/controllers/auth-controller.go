@@ -14,27 +14,9 @@ import (
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-// RegisterInput struct for registration input
-type RegisterInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-// LoginInput struct for login input
-type LoginInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-// Claims struct for JWT claims
-type Claims struct {
-	UserID uint `json:"user_id"`
-	jwt.RegisteredClaims
-}
-
 // Register handles user registration
 func Register(c *gin.Context) {
-	var input RegisterInput
+	var input models.RegisterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -64,7 +46,7 @@ func Register(c *gin.Context) {
 
 // Login handles user login
 func Login(c *gin.Context) {
-	var input LoginInput
+	var input models.LoginInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -87,7 +69,7 @@ func Login(c *gin.Context) {
 
 	// Create JWT token
 	expirationTime := time.Now().Add(24 * time.Hour)
-	claims := &Claims{
+	claims := &models.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
