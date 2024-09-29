@@ -23,6 +23,7 @@ func main() {
 	routes.SetupAuthRoutes(router)
 	routes.SetupNoteRoutes(router)
 	routes.SetupTaskRoutes(router)
+	routes.SetupCommentRoutes(router)
 
 	// Start the server
 	router.Run(":8080")
