@@ -7,14 +7,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/matthewwangg/papertrail-backend/controllers"
 	"github.com/matthewwangg/papertrail-backend/database"
 	"github.com/matthewwangg/papertrail-backend/models"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var jwtSecret []byte
 
 func AuthMiddleware() gin.HandlerFunc {
+
+	// Check if the JWT_SECRET is set
+	if jwtSecret == nil {
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			panic("JWT_SECRET environment variable not set")
+		}
+		jwtSecret = []byte(secret)
+	}
+
 	return func(c *gin.Context) {
 		// Get the token from the Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -33,7 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString := parts[1]
 
 		// Parse the token
-		claims := &controllers.Claims{}
+		claims := &models.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtSecret, nil
 		})
