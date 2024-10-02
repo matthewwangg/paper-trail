@@ -34,7 +34,7 @@ const SignupPage: React.FC = () => {
     return (
         <FormWrapper>
             <PageHeader title="Signup" />
-            <form onSubmit={handleSignup}  style={{ width: '100%' }}>
+            <form onSubmit={handleSignup}>
                 <FormInput placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
                 <Spacer y={1} />
                 <FormInput type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
