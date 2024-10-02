@@ -4,6 +4,7 @@ import axios from 'axios';
 import FormInput from '../components/FormInput';
 import SubmitButton from '../components/SubmitButton';
 import FormWrapper from '../components/FormWrapper';
+import PageHeader from "../components/PageHeader";
 import { Spacer } from '@nextui-org/react';
 
 const SignupPage: React.FC = () => {
@@ -32,19 +33,11 @@ const SignupPage: React.FC = () => {
 
     return (
         <FormWrapper>
-            <form onSubmit={handleSignup}>
-                <FormInput
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                />
+            <PageHeader title="Signup" />
+            <form onSubmit={handleSignup}  style={{ width: '100%' }}>
+                <FormInput placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
                 <Spacer y={1} />
-                <FormInput
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                />
+                <FormInput type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 <Spacer y={1.5} />
                 <SubmitButton isLoading={loading} label="Signup" />
             </form>
