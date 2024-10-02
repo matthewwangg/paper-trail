@@ -11,8 +11,16 @@ import (
 
 var DB *gorm.DB
 
-func ConnectDatabase() {
+func ConnectDatabase() error {
 	var err error
+
+	// Validate required environment variables
+	requiredEnvVars := []string{"DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT"}
+	for _, envVar := range requiredEnvVars {
+		if os.Getenv(envVar) == "" {
+			return fmt.Errorf("environment variable %s is not set", envVar)
+		}
+	}
 
 	// Database connection string
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
@@ -37,5 +45,5 @@ func ConnectDatabase() {
 		panic("Failed to migrate database!")
 	}
 	fmt.Println("Database Migrated")
-
+	return nil
 }
