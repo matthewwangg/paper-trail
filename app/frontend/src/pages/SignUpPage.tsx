@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import FormInput from '../components/FormInput';
+import SubmitButton from '../components/SubmitButton';
+import FormWrapper from '../components/FormWrapper';
+import PageHeader from "../components/PageHeader";
+import { Spacer } from '@nextui-org/react';
 
 const SignupPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const API_URL = 'http://localhost:8080';
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         try {
             await axios.post(`${API_URL}/auth/register`, {
                 username,
@@ -18,36 +25,23 @@ const SignupPage: React.FC = () => {
             alert('Registration successful. Please login.');
             navigate('/login');
         } catch (error) {
-            console.error('Signup error:', error);
-            alert('Registration failed');
+            alert('Registration failed.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div>
-            <h2>Signup</h2>
+        <FormWrapper>
+            <PageHeader title="Signup" />
             <form onSubmit={handleSignup}>
-                <div>
-                    <label>Username:</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Signup</button>
+                <FormInput placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+                <Spacer y={1} />
+                <FormInput type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Spacer y={1.5} />
+                <SubmitButton isLoading={loading} label="Signup" />
             </form>
-        </div>
+        </FormWrapper>
     );
 };
 
