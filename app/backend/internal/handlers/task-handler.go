@@ -1,18 +1,18 @@
-package controllers
+package handlers
 
 import (
 	"fmt"
+	"github.com/matthewwangg/papertrail-backend/internal/database"
+	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/matthewwangg/papertrail-backend/database"
-	"github.com/matthewwangg/papertrail-backend/models"
 )
 
 // GetTasks retrieves tasks for the authenticated user, with optional filtering, sorting, and pagination
 func GetTasks(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 
 	// Retrieve query parameters
 	statusParam := c.Query("status")
@@ -22,16 +22,16 @@ func GetTasks(c *gin.Context) {
 	pageParam := c.Query("page")
 	limitParam := c.Query("limit")
 
-	var tasks []models.Task
+	var tasks []models2.Task
 	query := database.DB.Preload("Tags").Where("user_id = ?", user.ID)
 
 	// Apply status filter if provided
 	if statusParam != "" {
 		// Validate status
-		var status models.TaskStatus
+		var status models2.TaskStatus
 		switch statusParam {
-		case string(models.StatusTodo), string(models.StatusInProgress), string(models.StatusDone):
-			status = models.TaskStatus(statusParam)
+		case string(models2.StatusTodo), string(models2.StatusInProgress), string(models2.StatusDone):
+			status = models2.TaskStatus(statusParam)
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 			return
@@ -42,10 +42,10 @@ func GetTasks(c *gin.Context) {
 	// Apply priority filter if provided
 	if priorityParam != "" {
 		// Validate priority
-		var priority models.TaskPriority
+		var priority models2.TaskPriority
 		switch priorityParam {
-		case string(models.PriorityLow), string(models.PriorityMedium), string(models.PriorityHigh):
-			priority = models.TaskPriority(priorityParam)
+		case string(models2.PriorityLow), string(models2.PriorityMedium), string(models2.PriorityHigh):
+			priority = models2.TaskPriority(priorityParam)
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid priority"})
 			return
@@ -101,9 +101,9 @@ func GetTasks(c *gin.Context) {
 
 // GetTaskByID retrieves a task by its ID
 func GetTaskByID(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	id := c.Param("id")
-	var task models.Task
+	var task models2.Task
 	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -114,8 +114,8 @@ func GetTaskByID(c *gin.Context) {
 
 // GetTasksGroupedByPriority retrieves tasks grouped by priority
 func GetTasksGroupedByPriority(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
-	var tasks []models.Task
+	user := c.MustGet("user").(models2.User)
+	var tasks []models2.Task
 
 	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
 	if result.Error != nil {
@@ -123,7 +123,7 @@ func GetTasksGroupedByPriority(c *gin.Context) {
 		return
 	}
 
-	groupedTasks := make(map[models.TaskPriority][]models.Task)
+	groupedTasks := make(map[models2.TaskPriority][]models2.Task)
 	for _, task := range tasks {
 		groupedTasks[task.Priority] = append(groupedTasks[task.Priority], task)
 	}
@@ -133,8 +133,8 @@ func GetTasksGroupedByPriority(c *gin.Context) {
 
 // GetTasksGroupedByStatus retrieves tasks grouped by status
 func GetTasksGroupedByStatus(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
-	var tasks []models.Task
+	user := c.MustGet("user").(models2.User)
+	var tasks []models2.Task
 
 	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).Find(&tasks)
 	if result.Error != nil {
@@ -142,7 +142,7 @@ func GetTasksGroupedByStatus(c *gin.Context) {
 		return
 	}
 
-	groupedTasks := make(map[models.TaskStatus][]models.Task)
+	groupedTasks := make(map[models2.TaskStatus][]models2.Task)
 	for _, task := range tasks {
 		groupedTasks[task.Status] = append(groupedTasks[task.Status], task)
 	}
@@ -152,12 +152,12 @@ func GetTasksGroupedByStatus(c *gin.Context) {
 
 // CreateTask adds a new task
 func CreateTask(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	var newTask struct {
-		Title       string              `json:"title" binding:"required"`
-		Description string              `json:"description"`
-		Priority    models.TaskPriority `json:"priority"`
-		Tags        []string            `json:"tags"`
+		Title       string               `json:"title" binding:"required"`
+		Description string               `json:"description"`
+		Priority    models2.TaskPriority `json:"priority"`
+		Tags        []string             `json:"tags"`
 	}
 
 	if err := c.ShouldBindJSON(&newTask); err != nil {
@@ -166,21 +166,21 @@ func CreateTask(c *gin.Context) {
 	}
 
 	// Prepare the task model
-	task := models.Task{
+	task := models2.Task{
 		Title:       newTask.Title,
 		Description: newTask.Description,
-		Status:      models.StatusTodo,
+		Status:      models2.StatusTodo,
 		Priority:    newTask.Priority,
 		UserID:      user.ID,
 	}
 
 	// Handle tags
 	if len(newTask.Tags) > 0 {
-		var tags []models.Tag
+		var tags []models2.Tag
 		for _, tagName := range newTask.Tags {
-			var tag models.Tag
+			var tag models2.Tag
 			// Find or create the tag
-			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName})
+			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models2.Tag{Name: tagName})
 			tags = append(tags, tag)
 		}
 		task.Tags = tags
@@ -198,10 +198,10 @@ func CreateTask(c *gin.Context) {
 
 // UpdateTask modifies an existing task
 func UpdateTask(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	id := c.Param("id")
 
-	var task models.Task
+	var task models2.Task
 	result := database.DB.Preload("Tags").Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -209,11 +209,11 @@ func UpdateTask(c *gin.Context) {
 	}
 
 	var updatedTask struct {
-		Title       string              `json:"title"`
-		Description string              `json:"description"`
-		Status      models.TaskStatus   `json:"status"`
-		Priority    models.TaskPriority `json:"priority"`
-		Tags        []string            `json:"tags"`
+		Title       string               `json:"title"`
+		Description string               `json:"description"`
+		Status      models2.TaskStatus   `json:"status"`
+		Priority    models2.TaskPriority `json:"priority"`
+		Tags        []string             `json:"tags"`
 	}
 
 	if err := c.ShouldBindJSON(&updatedTask); err != nil {
@@ -229,11 +229,11 @@ func UpdateTask(c *gin.Context) {
 
 	// Handle tags (Clear existing tags and re-assign)
 	if len(updatedTask.Tags) > 0 {
-		var tags []models.Tag
+		var tags []models2.Tag
 		for _, tagName := range updatedTask.Tags {
-			var tag models.Tag
+			var tag models2.Tag
 			// Find or create the tag
-			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models.Tag{Name: tagName})
+			database.DB.Where("name = ?", tagName).FirstOrCreate(&tag, models2.Tag{Name: tagName})
 			tags = append(tags, tag)
 		}
 		task.Tags = tags
@@ -251,9 +251,9 @@ func UpdateTask(c *gin.Context) {
 
 // DeleteTask removes a task by its ID
 func DeleteTask(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	id := c.Param("id")
-	var task models.Task
+	var task models2.Task
 	result := database.DB.Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
@@ -269,22 +269,22 @@ func DeleteTask(c *gin.Context) {
 
 // UpdateTaskStatus changes the status of a task
 func UpdateTaskStatus(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	id := c.Param("id")
 	var input struct {
-		Status models.TaskStatus `json:"status" binding:"required"`
+		Status models2.TaskStatus `json:"status" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if input.Status != models.StatusTodo && input.Status != models.StatusInProgress && input.Status != models.StatusDone {
+	if input.Status != models2.StatusTodo && input.Status != models2.StatusInProgress && input.Status != models2.StatusDone {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 		return
 	}
 
-	var task models.Task
+	var task models2.Task
 	result := database.DB.Where("user_id = ?", user.ID).First(&task, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})

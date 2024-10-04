@@ -4,7 +4,7 @@ import (
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth_gin"
 	"github.com/gin-gonic/gin"
-	"github.com/matthewwangg/papertrail-backend/controllers"
+	"github.com/matthewwangg/papertrail-backend/internal/handlers"
 	"time"
 )
 
@@ -14,7 +14,7 @@ func SetupAuthRoutes(router *gin.Engine) {
 
 	auth := router.Group("/auth")
 	{
-		auth.POST("/register", tollbooth_gin.LimitHandler(limiter), controllers.Register)
-		auth.POST("/login", tollbooth_gin.LimitHandler(limiter), controllers.Login)
+		auth.POST("/register", tollbooth_gin.LimitHandler(limiter), handlers.Register)
+		auth.POST("/login", tollbooth_gin.LimitHandler(limiter), handlers.Login)
 	}
 }

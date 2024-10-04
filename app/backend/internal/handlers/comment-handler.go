@@ -1,17 +1,17 @@
-package controllers
+package handlers
 
 import (
+	"github.com/matthewwangg/papertrail-backend/internal/database"
+	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/matthewwangg/papertrail-backend/database"
-	"github.com/matthewwangg/papertrail-backend/models"
 )
 
 // AddComment adds a comment to a task
 func AddComment(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	taskID, err := strconv.Atoi(c.Param("task_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
@@ -27,7 +27,7 @@ func AddComment(c *gin.Context) {
 		return
 	}
 
-	comment := models.Comment{
+	comment := models2.Comment{
 		Content: input.Content,
 		TaskID:  uint(taskID),
 		UserID:  user.ID,
@@ -44,14 +44,14 @@ func AddComment(c *gin.Context) {
 
 // GetComments retrieves comments for a task
 func GetComments(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user := c.MustGet("user").(models2.User)
 	taskID, err := strconv.Atoi(c.Param("task_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
 		return
 	}
 
-	var comments []models.Comment
+	var comments []models2.Comment
 	result := database.DB.Where("task_id = ? AND user_id = ?", taskID, user.ID).Find(&comments)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})

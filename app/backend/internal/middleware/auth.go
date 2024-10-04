@@ -1,14 +1,14 @@
 package middleware
 
 import (
+	"github.com/matthewwangg/papertrail-backend/internal/database"
+	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/matthewwangg/papertrail-backend/database"
-	"github.com/matthewwangg/papertrail-backend/models"
 )
 
 var jwtSecret []byte
@@ -42,7 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString := parts[1]
 
 		// Parse the token
-		claims := &models.Claims{}
+		claims := &models2.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			return jwtSecret, nil
 		})
@@ -53,7 +53,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// Find the user
-		var user models.User
+		var user models2.User
 		result := database.DB.First(&user, claims.UserID)
 		if result.Error != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
