@@ -13,7 +13,7 @@ func SetupCommentRoutes(router *gin.Engine) {
 	limiter := tollbooth.NewLimiter(5, nil)
 	limiter.SetTokenBucketExpirationTTL(time.Minute)
 
-	comments := router.Group("/tasks/:task_id/comments")
+	comments := router.Group("/tasks/:id/comments")
 	comments.Use(middleware.AuthMiddleware())
 	{
 		comments.POST("", tollbooth_gin.LimitHandler(limiter), handlers.AddComment)

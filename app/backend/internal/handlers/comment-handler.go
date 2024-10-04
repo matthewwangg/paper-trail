@@ -12,7 +12,7 @@ import (
 // AddComment adds a comment to a task
 func AddComment(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
-	taskID, err := strconv.Atoi(c.Param("task_id"))
+	taskID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
 		return
@@ -45,7 +45,7 @@ func AddComment(c *gin.Context) {
 // GetComments retrieves comments for a task
 func GetComments(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
-	taskID, err := strconv.Atoi(c.Param("task_id"))
+	taskID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
 		return
