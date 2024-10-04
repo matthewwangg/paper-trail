@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/matthewwangg/papertrail-backend/internal/database"
-	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 	"strconv"
 
@@ -12,7 +12,7 @@ import (
 
 // GetTasks retrieves tasks for the authenticated user, with optional filtering, sorting, and pagination
 func GetTasks(c *gin.Context) {
-	user := c.MustGet("user").(models2.User)
+	user := c.MustGet("user").(models.User)
 
 	// Retrieve query parameters
 	statusParam := c.Query("status")
@@ -22,16 +22,16 @@ func GetTasks(c *gin.Context) {
 	pageParam := c.Query("page")
 	limitParam := c.Query("limit")
 
-	var tasks []models2.Task
+	var tasks []models.Task
 	query := database.DB.Preload("Tags").Where("user_id = ?", user.ID)
 
 	// Apply status filter if provided
 	if statusParam != "" {
 		// Validate status
-		var status models2.TaskStatus
+		var status models.TaskStatus
 		switch statusParam {
-		case string(models2.StatusTodo), string(models2.StatusInProgress), string(models2.StatusDone):
-			status = models2.TaskStatus(statusParam)
+		case string(models.StatusTodo), string(models.StatusInProgress), string(models.StatusDone):
+			status = models.TaskStatus(statusParam)
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
 			return
@@ -42,10 +42,10 @@ func GetTasks(c *gin.Context) {
 	// Apply priority filter if provided
 	if priorityParam != "" {
 		// Validate priority
-		var priority models2.TaskPriority
+		var priority models.TaskPriority
 		switch priorityParam {
-		case string(models2.PriorityLow), string(models2.PriorityMedium), string(models2.PriorityHigh):
-			priority = models2.TaskPriority(priorityParam)
+		case string(models.PriorityLow), string(models.PriorityMedium), string(models.PriorityHigh):
+			priority = models.TaskPriority(priorityParam)
 		default:
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid priority"})
 			return

@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/internal/models"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -40,7 +40,7 @@ func ConnectDatabase() error {
 	fmt.Println("Database connection successfully opened")
 
 	// Migrate the schema
-	err = DB.AutoMigrate(&models2.User{}, &models2.Note{}, &models2.Task{}, &models2.Tag{}, &models2.Comment{})
+	err = DB.AutoMigrate(&models.User{}, &models.Note{}, &models.Task{}, &models.Tag{}, &models.Comment{})
 	if err != nil {
 		panic("Failed to migrate database!")
 	}

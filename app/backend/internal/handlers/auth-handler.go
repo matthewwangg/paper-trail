@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/matthewwangg/papertrail-backend/internal/database"
-	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 	"os"
 	"time"
@@ -16,7 +16,7 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 // Register handles user registration
 func Register(c *gin.Context) {
-	var input models2.RegisterInput
+	var input models.RegisterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -30,7 +30,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	user := models2.User{
+	user := models.User{
 		Username: input.Username,
 		Password: string(hashedPassword),
 	}
@@ -46,14 +46,14 @@ func Register(c *gin.Context) {
 
 // Login handles user login
 func Login(c *gin.Context) {
-	var input models2.LoginInput
+	var input models.LoginInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var user models2.User
+	var user models.User
 	result := database.DB.Where("username = ?", input.Username).First(&user)
 	if result.Error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
@@ -69,7 +69,7 @@ func Login(c *gin.Context) {
 
 	// Create JWT token
 	expirationTime := time.Now().Add(24 * time.Hour)
-	claims := &models2.Claims{
+	claims := &models.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),

@@ -3,13 +3,13 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/matthewwangg/papertrail-backend/internal/database"
-	models2 "github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/internal/models"
 	"net/http"
 )
 
 // GetNotes retrieves all notes
 func GetNotes(c *gin.Context) {
-	var notes []models2.Note
+	var notes []models.Note
 	result := database.DB.Find(&notes)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
@@ -21,7 +21,7 @@ func GetNotes(c *gin.Context) {
 // GetNoteByID retrieves a note by its ID
 func GetNoteByID(c *gin.Context) {
 	id := c.Param("id")
-	var note models2.Note
+	var note models.Note
 	result := database.DB.First(&note, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Note not found"})
@@ -32,7 +32,7 @@ func GetNoteByID(c *gin.Context) {
 
 // CreateNote adds a new note
 func CreateNote(c *gin.Context) {
-	var newNote models2.Note
+	var newNote models.Note
 	if err := c.ShouldBindJSON(&newNote); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -45,7 +45,7 @@ func CreateNote(c *gin.Context) {
 		return
 	}
 
-	newNote.UserID = user.(models2.User).ID
+	newNote.UserID = user.(models.User).ID
 
 	result := database.DB.Create(&newNote)
 	if result.Error != nil {
@@ -58,7 +58,7 @@ func CreateNote(c *gin.Context) {
 // UpdateNote modifies an existing note
 func UpdateNote(c *gin.Context) {
 	id := c.Param("id")
-	var note models2.Note
+	var note models.Note
 	result := database.DB.First(&note, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Note not found"})
@@ -79,7 +79,7 @@ func UpdateNote(c *gin.Context) {
 // DeleteNote removes a note by its ID
 func DeleteNote(c *gin.Context) {
 	id := c.Param("id")
-	var note models2.Note
+	var note models.Note
 	result := database.DB.First(&note, id)
 	if result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Note not found"})
