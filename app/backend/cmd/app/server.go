@@ -4,14 +4,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/routes"
+	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 )
 
 func StartServer() {
+	// Setup Logger
+	logger.SetupLogger()
+
 	// Connect to the database
 	database.ConnectDatabase()
 
 	// Create a new router
 	router := gin.Default()
+
+	// Apply the logging middleware
+	router.Use(logger.GinLogger())
 
 	// Setup routes
 	routes.SetupAuthRoutes(router)
