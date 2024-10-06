@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -18,6 +19,7 @@ func ConnectDatabase() error {
 	requiredEnvVars := []string{"DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT"}
 	for _, envVar := range requiredEnvVars {
 		if os.Getenv(envVar) == "" {
+			logger.Log.WithField("env_var", envVar).Error("Environment variable is not set")
 			return fmt.Errorf("environment variable %s is not set", envVar)
 		}
 	}
@@ -34,16 +36,19 @@ func ConnectDatabase() error {
 	// Open connection
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to database!")
+		logger.Log.WithError(err).Error("Failed to connect to database")
+		return err
 	}
 
-	fmt.Println("Database connection successfully opened")
+	logger.Log.Info("Database connection successfully opened")
 
 	// Migrate the schema
 	err = DB.AutoMigrate(&models.User{}, &models.Note{}, &models.Task{}, &models.Tag{}, &models.Comment{})
 	if err != nil {
-		panic("Failed to migrate database!")
+		logger.Log.WithError(err).Error("Failed to migrate database")
+		return err
 	}
-	fmt.Println("Database Migrated")
+
+	logger.Log.Info("Database migrated successfully")
 	return nil
 }
