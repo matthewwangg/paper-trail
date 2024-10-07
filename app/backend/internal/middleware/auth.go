@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 	"net/http"
 	"os"
 	"strings"
@@ -19,6 +20,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	if jwtSecret == nil {
 		secret := os.Getenv("JWT_SECRET")
 		if secret == "" {
+			logger.Log.Fatal("JWT_SECRET environment variable not set")
 			panic("JWT_SECRET environment variable not set")
 		}
 		jwtSecret = []byte(secret)
@@ -28,6 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Get the token from the Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
+			logger.Log.Warn("Authorization header missing")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
 			return
 		}
@@ -35,6 +38,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Extract the token from the header
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
+			logger.Log.Warn("Invalid authorization header format")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
 			return
 		}
@@ -48,6 +52,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
+			logger.Log.WithError(err).Warn("Invalid token")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			return
 		}
@@ -56,9 +61,12 @@ func AuthMiddleware() gin.HandlerFunc {
 		var user models.User
 		result := database.DB.First(&user, claims.UserID)
 		if result.Error != nil {
+			logger.Log.WithField("userID", claims.UserID).Warn("User not found")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			return
 		}
+
+		logger.Log.WithField("userID", claims.UserID).Info("Authenticated user successfully")
 
 		// Attach user to context
 		c.Set("user", user)
