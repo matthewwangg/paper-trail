@@ -5,9 +5,14 @@ import (
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/routes"
 	"github.com/matthewwangg/papertrail-backend/pkg/logger"
+	"github.com/matthewwangg/papertrail-backend/pkg/validator"
 )
 
 func StartServer() {
+
+	// Setup Validator
+	validator.InitValidator()
+
 	// Setup Logger
 	logger.SetupLogger()
 
