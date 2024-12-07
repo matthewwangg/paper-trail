@@ -6,10 +6,10 @@ import (
 	"github.com/matthewwangg/papertrail-backend/internal/routes"
 	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 	"github.com/matthewwangg/papertrail-backend/pkg/validator"
+	"time"
 )
 
 func StartServer() {
-
 	// Setup Validator
 	validator.InitValidator()
 
@@ -17,7 +17,9 @@ func StartServer() {
 	logger.SetupLogger()
 
 	// Connect to the database
-	database.ConnectDatabase()
+	if err := database.ConnectDatabase(); err != nil {
+		logger.Log.Fatal("Failed to connect to the database: ", err)
+	}
 
 	// Create a new router
 	router := gin.Default()
@@ -32,8 +34,7 @@ func StartServer() {
 	routes.SetupCommentRoutes(router)
 
 	// Start the server on port 8080
-	err := router.Run(":8080")
-	if err != nil {
-		panic("Error starting the server: " + err.Error())
+	if err := router.Run(":8080"); err != nil {
+		logger.Log.Fatal("Error starting the server: ", err)
 	}
 }
