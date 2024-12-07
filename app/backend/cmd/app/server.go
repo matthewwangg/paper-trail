@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/routes"
@@ -26,6 +27,16 @@ func StartServer() {
 
 	// Apply the logging middleware
 	router.Use(logger.GinLogger())
+
+	// Apply CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	// Setup routes
 	routes.SetupAuthRoutes(router)
