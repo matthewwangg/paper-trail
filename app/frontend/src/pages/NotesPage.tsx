@@ -79,16 +79,16 @@ const NotesPage: React.FC = () => {
     };
 
     return (
-        <div style={{padding: '20px', backgroundColor: '#001f3f', minHeight: '100vh'}}>
-            <h2 style={{textAlign: 'center', marginBottom: '20px', color: 'white'}}>Notes</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', padding: '20px', backgroundColor: '#001f3f', minHeight: '100vh' }}>
+            {/* Add Note Section */}
             <Card
                 style={{
                     backgroundColor: '#FFEB3B',
                     padding: '20px',
                     maxWidth: '250px',
-                    margin: '0 auto',
+                    maxHeight: '250px',
                     borderRadius: '8px',
-                    boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)'
                 }}
             >
                 <form onSubmit={(e) => (selectedNoteId ? handleUpdateNote(e) : handleAddNote(e))}>
@@ -99,32 +99,33 @@ const NotesPage: React.FC = () => {
                         onChange={(e) => setTitle(e.target.value)}
                         required
                     />
-                    <Spacer y={1} />
+                    <Spacer y={1}/>
                     <Textarea
                         placeholder="Note Content"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         required
                         style={{
+                            boxSizing: 'border-box',
                             resize: 'none',
                         }}
                     />
-                    <Spacer y={1.5} />
+                    <Spacer y={1.5}/>
                     <Button type="submit" color="primary" fullWidth>
                         {selectedNoteId ? 'Update Note' : 'Add Note'}
                     </Button>
                 </form>
             </Card>
-            <Spacer y={2}/>
-            <div style={{display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center'}}>
+            {/* Existing Notes Section */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'flex-start', marginTop: '20px' }}>
                 {notes.map((note, index) => (
                     <Card
                         key={note.id}
                         style={{
-                            backgroundColor: index % 2 === 0 ? '#FFEB3B' : '#4CAF50',
+                            backgroundColor: index % 3 === 0 ? '#FFCC80' : index % 3 === 1 ? '#4CAF50' : '#80DEEA',
                             padding: '15px',
-                            width: '200px',
-                            minHeight: '150px',
+                            width: '250px',
+                            minHeight: '250px',
                             borderRadius: '8px',
                             boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)',
                         }}
