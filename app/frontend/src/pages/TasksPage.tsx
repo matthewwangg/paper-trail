@@ -71,7 +71,7 @@ const TasksPage: React.FC = () => {
             setTitle('');
             setDescription('');
             setPriority('medium');
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error('Add task error:', error);
         }
@@ -80,7 +80,7 @@ const TasksPage: React.FC = () => {
     const handleUpdateTask = async (id: number, updatedFields: Partial<Task>) => {
         try {
             await axios.put(`/tasks/${id}`, updatedFields);
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error('Update task error:', error);
         }
@@ -89,7 +89,7 @@ const TasksPage: React.FC = () => {
     const handleUpdateTaskStatus = async (id: number, status: string) => {
         try {
             await axios.put(`/tasks/${id}/status`, { status });
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error('Update task status error:', error);
         }
@@ -98,17 +98,17 @@ const TasksPage: React.FC = () => {
     const handleDeleteTask = async (id: number) => {
         try {
             await axios.delete(`/tasks/${id}`);
-            refreshData();
+            await refreshData();
         } catch (error) {
             console.error('Delete task error:', error);
         }
     };
 
     // Refresh data after any change
-    const refreshData = () => {
-        fetchTasks();
-        fetchGroupedTasksByStatus();
-        fetchGroupedTasksByPriority();
+    const refreshData = async () => {
+        await fetchTasks();
+        await fetchGroupedTasksByStatus();
+        await fetchGroupedTasksByPriority();
     };
 
     const TaskList = (data: { [key: string]: Task[] }, keys: string[], field: 'status' | 'priority') =>

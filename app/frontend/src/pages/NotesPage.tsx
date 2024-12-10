@@ -48,7 +48,7 @@ const NotesPage: React.FC = () => {
             );
             setTitle('');
             setContent('');
-            fetchNotes();
+            await fetchNotes();
         } catch (error) {
             console.error('Add note error:', error);
         }
@@ -62,7 +62,7 @@ const NotesPage: React.FC = () => {
                 setTitle('');
                 setContent('');
                 setSelectedNoteId(null);  
-                fetchNotes();
+                await fetchNotes();
             } catch (error) {
                 console.error('Update note error:', error);
             }
@@ -72,7 +72,7 @@ const NotesPage: React.FC = () => {
     const handleDeleteNote = async (id: number) => {
         try {
             await axios.delete(`/notes/${id}`);
-            fetchNotes();
+            await fetchNotes();
         } catch (error) {
             console.error('Delete note error:', error);
         }
