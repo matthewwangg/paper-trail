@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../services/api';
+import api from '../services/api';
 import { Input, Textarea, Button, Card, Spacer } from '@nextui-org/react';
 
 interface Note {
@@ -20,7 +20,7 @@ const NotesPage: React.FC = () => {
 
     const fetchNotes = async () => {
         try {
-            const response = await axios.get(`/notes`);
+            const response = await api.get(`/notes`);
             setNotes(response.data);
         } catch (error) {
             console.error('Fetch notes error:', error);
@@ -29,7 +29,7 @@ const NotesPage: React.FC = () => {
 
     const fetchNoteById = async (id: number) => {
         try {
-            const response = await axios.get(`/notes/${id}`);
+            const response = await api.get(`/notes/${id}`);
             const note = response.data;
             setTitle(note.title);
             setContent(note.content);
@@ -42,7 +42,7 @@ const NotesPage: React.FC = () => {
     const handleAddNote = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post(
+            await api.post(
                 `/notes`,
                 { title, content }
             );
@@ -58,7 +58,7 @@ const NotesPage: React.FC = () => {
         e.preventDefault();
         if (selectedNoteId !== null) {
             try {
-                await axios.put(`/notes/${selectedNoteId}`, { title, content });
+                await api.put(`/notes/${selectedNoteId}`, { title, content });
                 setTitle('');
                 setContent('');
                 setSelectedNoteId(null);  
@@ -71,7 +71,7 @@ const NotesPage: React.FC = () => {
 
     const handleDeleteNote = async (id: number) => {
         try {
-            await axios.delete(`/notes/${id}`);
+            await api.delete(`/notes/${id}`);
             await fetchNotes();
         } catch (error) {
             console.error('Delete note error:', error);

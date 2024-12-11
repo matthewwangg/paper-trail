@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from '../services/api';
+import api from '../services/api';
 
 interface Task {
     id: number;
@@ -27,7 +27,7 @@ const TasksPage: React.FC = () => {
 
     const fetchTasks = async () => {
         try {
-            const response = await axios.get('/tasks');
+            const response = await api.get('/tasks');
             setTasks(response.data);
         } catch (error) {
             console.error('Fetch tasks error:', error);
@@ -36,7 +36,7 @@ const TasksPage: React.FC = () => {
 
     const fetchTaskById = async (id: number) => {
         try {
-            const response = await axios.get(`/tasks/${id}`);
+            const response = await api.get(`/tasks/${id}`);
             const task = response.data;
             setTitle(task.title);
             setDescription(task.description);
@@ -48,7 +48,7 @@ const TasksPage: React.FC = () => {
 
     const fetchGroupedTasksByStatus = async () => {
         try {
-            const response = await axios.get('/tasks/grouped/status');
+            const response = await api.get('/tasks/grouped/status');
             setGroupedTasksByStatus(response.data);
         } catch (error) {
             console.error('Fetch grouped tasks by status error:', error);
@@ -57,7 +57,7 @@ const TasksPage: React.FC = () => {
 
     const fetchGroupedTasksByPriority = async () => {
         try {
-            const response = await axios.get('/tasks/grouped/priority');
+            const response = await api.get('/tasks/grouped/priority');
             setGroupedTasksByPriority(response.data);
         } catch (error) {
             console.error('Fetch grouped tasks by priority error:', error);
@@ -67,7 +67,7 @@ const TasksPage: React.FC = () => {
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('/tasks', { title, description, priority });
+            await api.post('/tasks', { title, description, priority });
             setTitle('');
             setDescription('');
             setPriority('medium');
@@ -79,7 +79,7 @@ const TasksPage: React.FC = () => {
 
     const handleUpdateTask = async (id: number, updatedFields: Partial<Task>) => {
         try {
-            await axios.put(`/tasks/${id}`, updatedFields);
+            await api.put(`/tasks/${id}`, updatedFields);
             await refreshData();
         } catch (error) {
             console.error('Update task error:', error);
@@ -88,7 +88,7 @@ const TasksPage: React.FC = () => {
 
     const handleUpdateTaskStatus = async (id: number, status: string) => {
         try {
-            await axios.put(`/tasks/${id}/status`, { status });
+            await api.put(`/tasks/${id}/status`, { status });
             await refreshData();
         } catch (error) {
             console.error('Update task status error:', error);
@@ -97,7 +97,7 @@ const TasksPage: React.FC = () => {
 
     const handleDeleteTask = async (id: number) => {
         try {
-            await axios.delete(`/tasks/${id}`);
+            await api.delete(`/tasks/${id}`);
             await refreshData();
         } catch (error) {
             console.error('Delete task error:', error);
