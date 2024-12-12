@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/models"
+	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 	"net/http"
 	"os"
 	"time"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var jwtSecret []byte
 
 // Register handles user registration
 func Register(c *gin.Context) {
@@ -47,6 +48,16 @@ func Register(c *gin.Context) {
 // Login handles user login
 func Login(c *gin.Context) {
 	var input models.LoginInput
+
+	// Check if the JWT_SECRET is set
+	if jwtSecret == nil {
+		secret := os.Getenv("JWT_SECRET")
+		if secret == "" {
+			logger.Log.Fatal("JWT_SECRET environment variable not set")
+			panic("JWT_SECRET environment variable not set")
+		}
+		jwtSecret = []byte(secret)
+	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
