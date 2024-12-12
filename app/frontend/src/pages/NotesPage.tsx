@@ -123,11 +123,14 @@ const NotesPage: React.FC = () => {
                         key={note.id}
                         style={{
                             backgroundColor: index % 3 === 0 ? '#FFCC80' : index % 3 === 1 ? '#4CAF50' : '#80DEEA',
-                            padding: '15px',
-                            width: '250px',
-                            minHeight: '250px',
+                            padding: '20px',
+                            maxWidth: '250px',
+                            maxHeight: '250px',
                             borderRadius: '8px',
                             boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between'
                         }}
                     >
                         <h3 style={{margin: '0 0 10px', fontSize: '16px'}}>{note.title}</h3>
