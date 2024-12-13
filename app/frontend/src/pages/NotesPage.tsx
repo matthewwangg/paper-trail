@@ -3,9 +3,10 @@ import api from '../services/api';
 import { Input, Textarea, Button, Card, Spacer } from '@nextui-org/react';
 
 interface Note {
-    id: number;
+    ID: number;
     title: string;
     content: string;
+    user_id: string;
 }
 
 const NotesPage: React.FC = () => {
@@ -85,8 +86,8 @@ const NotesPage: React.FC = () => {
                 style={{
                     backgroundColor: '#FFEB3B',
                     padding: '20px',
-                    maxWidth: '250px',
-                    maxHeight: '250px',
+                    width: '250px',
+                    height: '250px',
                     borderRadius: '8px',
                     boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)'
                 }}
@@ -120,12 +121,12 @@ const NotesPage: React.FC = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'flex-start', marginTop: '20px' }}>
                 {notes.map((note, index) => (
                     <Card
-                        key={note.id}
+                        key={note.ID}
                         style={{
                             backgroundColor: index % 3 === 0 ? '#FFCC80' : index % 3 === 1 ? '#4CAF50' : '#80DEEA',
                             padding: '20px',
-                            maxWidth: '250px',
-                            maxHeight: '250px',
+                            width: '250px',
+                            height: '250px',
                             borderRadius: '8px',
                             boxShadow: '3px 3px 10px rgba(0, 0, 0, 0.1)',
                             display: 'flex',
@@ -136,10 +137,10 @@ const NotesPage: React.FC = () => {
                         <h3 style={{margin: '0 0 10px', fontSize: '16px'}}>{note.title}</h3>
                         <p style={{fontSize: '14px', lineHeight: '1.5'}}>{note.content}</p>
                         <div style={{marginTop: '10px', display: 'flex', justifyContent: 'space-between'}}>
-                            <Button size="sm" onClick={() => fetchNoteById(note.id)}>
+                            <Button size="sm" onClick={() => fetchNoteById(note.ID)}>
                                 Edit
                             </Button>
-                            <Button size="sm" onClick={() => handleDeleteNote(note.id)}>
+                            <Button size="sm" onClick={() => handleDeleteNote(note.ID)}>
                                 Delete
                             </Button>
                         </div>
