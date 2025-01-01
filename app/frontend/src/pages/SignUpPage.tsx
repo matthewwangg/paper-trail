@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import FormInput from '../components/FormInput';
-import SubmitButton from '../components/SubmitButton';
+import { Box, Typography } from '@mui/material';
 import FormWrapper from '../components/FormWrapper';
-import PageHeader from "../components/PageHeader";
-import { Spacer } from '@nextui-org/react';
 
 const SignupPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -14,17 +11,13 @@ const SignupPage: React.FC = () => {
     const navigate = useNavigate();
     const API_URL = 'http://localhost:8080';
 
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSignup = async () => {
         setLoading(true);
         try {
-            await axios.post(`${API_URL}/auth/register`, {
-                username,
-                password,
-            });
+            await axios.post(`${API_URL}/auth/register`, { username, password });
             alert('Registration successful. Please login.');
             navigate('/login');
-        } catch (error) {
+        } catch {
             alert('Registration failed.');
         } finally {
             setLoading(false);
@@ -32,16 +25,23 @@ const SignupPage: React.FC = () => {
     };
 
     return (
-        <FormWrapper>
-            <PageHeader title="Signup" />
-            <form onSubmit={handleSignup}>
-                <FormInput placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-                <Spacer y={1} />
-                <FormInput type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <Spacer y={1.5} />
-                <SubmitButton isLoading={loading} label="Signup" />
-            </form>
-        </FormWrapper>
+        <Box sx={{ backgroundColor: 'black', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <FormWrapper
+                title="Signup"
+                fields={[
+                    { placeholder: 'Username', value: username, onChange: setUsername },
+                    { placeholder: 'Password', value: password, onChange: setPassword, type: 'password' },
+                ]}
+                onSubmit={handleSignup}
+                buttonLabel="Signup"
+                loading={loading}
+                additionalContent={
+                    <Typography sx={{ mt: 2, color: 'white' }}>
+                        Already have an account? <Typography component="span" sx={{ color: '#4ADE80', cursor: 'pointer', '&:hover': { color: '#3CA769' }} } onClick={() => navigate('/login')}>Login</Typography>
+                    </Typography>
+                }
+            />
+        </Box>
     );
 };
 
