@@ -24,5 +24,6 @@ func SetupTaskRoutes(router *gin.Engine) {
 		tasks.PUT("/:id", tollbooth_gin.LimitHandler(limiter), handlers.UpdateTask)
 		tasks.DELETE("/:id", tollbooth_gin.LimitHandler(limiter), handlers.DeleteTask)
 		tasks.PUT("/:id/status", tollbooth_gin.LimitHandler(limiter), handlers.UpdateTaskStatus)
+		tasks.PUT("/:id/priority", tollbooth_gin.LimitHandler(limiter), handlers.UpdateTaskPriority)
 	}
 }

@@ -300,3 +300,39 @@ func UpdateTaskStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, task)
 }
+
+// UpdateTaskPriority updates the priority of a tsak
+func UpdateTaskPriority(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	id := c.Param("id")
+
+	var input struct {
+		Priority models.TaskPriority `json:"priority" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if input.Priority != models.PriorityLow && input.Priority != models.PriorityMedium && input.Priority != models.PriorityHigh {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status"})
+		return
+	}
+
+	var task models.Task
+	result := database.DB.Where("user_id = ?", user.ID).First(&task, id)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+		return
+	}
+
+	task.Priority = input.Priority
+	saveResult := database.DB.Save(&task)
+	if saveResult.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": saveResult.Error.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, task)
+}
