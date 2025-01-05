@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Button, Card, CardContent, Typography, TextField, Select, MenuItem, Box, Paper } from '@mui/material';
+import {DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided} from 'react-beautiful-dnd';
 
 interface Task {
     id: number;
@@ -133,104 +134,87 @@ const TasksPage: React.FC = () => {
         }
     };
 
+    const handleDragEnd = async (result: any) => {
+        const { source, destination, draggableId } = result;
+
+        // Check if the destination exists and is different from the source
+        if (!destination || source.droppableId === destination.droppableId) {
+            return;
+        }
+
+        // Parse the task ID from the draggableId
+        const taskId = parseInt(draggableId, 10);
+        if (isNaN(taskId)) {
+            console.error("Invalid task ID:", draggableId);
+            return;
+        }
+
+        try {
+            const fieldToUpdate = viewMode === "status" ? "status" : "priority";
+            const newValue = destination.droppableId;
+
+            await api.put(`/tasks/${taskId}`, {
+                [fieldToUpdate]: newValue,
+            });
+
+            await refreshData();
+        } catch (error) {
+            console.error("Error updating task on drag end:", error);
+        }
     };
+
 
     const TaskList = (data: { [key: string]: Task[] }, keys: string[], field: 'status' | 'priority') =>
         keys.map((key) => (
-            <Paper key={key} sx={{ backgroundColor: '#161B22', border: '1px solid #30363D', flex: 1, padding: 2, borderRadius: 2 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: '#58A6FF' }}>
-                    {key}
-                </Typography>
-                {(data[key] || []).map((task: Task) => (
-                    <Card
-                        key={task.id}
-                        sx={{ marginBottom: 1, backgroundColor: '#21262D', borderRadius: 1, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}
-                    >
-                        <CardContent>
-                            <Typography variant="subtitle1" sx={{ color: '#C9D1D9' }}>
-                                {task.title}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: '#8B949E' }}>
-                                {task.description}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#79C0FF' }}>
-                                Priority: {task.priority}
-                            </Typography>
-                            <Box mt={1} display="flex" gap={1}>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ color: '#FF7B72', borderColor: '#FF7B72' }}
-                                    onClick={() => handleDeleteTask(task.id)}
-                                >
-                                    Delete
-                                </Button>
-                                {(field === 'status' ? statuses : priorities).map((val) => (
-                                    <Button
-                                        key={val}
-                                        size="small"
-                                        variant="contained"
-                                        disabled={val === task[field]}
-                                        sx={{ backgroundColor: val === task[field] ? '#30363D' : '#28A745', color: '#fff' }}
-                                        onClick={() => handleUpdateTaskStatus(task.id, val)}
-                                    >
-                                        {field === 'status' ? `Move to ${val}` : `Set Priority ${val}`}
-                                    </Button>
-                                ))}
-                            </Box>
-                        </CardContent>
-                    </Card>
-                ))}
-            </Paper>
+            <Droppable droppableId={key.trim()} key={key.trim()} type="group">
+                {(provided: DroppableProvided) => (
+                    <Paper ref={provided.innerRef} {...provided.droppableProps} sx={{ backgroundColor: '#161B22', border: '1px solid #30363D', flex: 1, padding: 2, borderRadius: 2 }}>
+                        <Typography variant="h6" gutterBottom sx={{ color: '#58A6FF' }}>{key}</Typography>
+                        {(data[key] || []).map((task: Task, index: number) => (
+                            <Draggable draggableId={task.id.toString()} index={index} key={task.id}>
+                                {(provided: DraggableProvided) => (
+                                    <Card ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ marginBottom: 1, backgroundColor: '#21262D', borderRadius: 1, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
+                                        <CardContent>
+                                            <Typography variant="subtitle1" sx={{ color: '#C9D1D9' }}>{task.title}</Typography>
+                                            <Typography variant="body2" sx={{ color: '#8B949E' }}>{task.description}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#79C0FF' }}>Priority: {task.priority}</Typography>
+                                            <Box mt={1} display="flex" gap={1}>
+                                                <Button size="small" variant="outlined" sx={{ color: '#FF7B72', borderColor: '#FF7B72' }} onClick={() => handleDeleteTask(task.id)}>Delete</Button>
+                                                {(field === 'status' ? statuses : priorities).map((val) => (
+                                                    <Button key={val} size="small" variant="contained" disabled={val === task[field]} sx={{ backgroundColor: val === task[field] ? '#30363D' : '#28A745', color: '#fff' }} onClick={() => handleUpdateTaskStatus(task.id, val)}>
+                                                        {field === 'status' ? `Move to ${val}` : `Set Priority ${val}`}
+                                                    </Button>
+                                                ))}
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
+                    </Paper>
+                )}
+            </Droppable>
         ));
 
     return (
         <Box sx={{ backgroundColor: '#0D1117', color: '#C9D1D9', minHeight: '100vh', padding: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Task Board
-            </Typography>
-
+            <Typography variant="h4" gutterBottom>Task Board</Typography>
             <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
-                <TextField
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    label="Title"
-                    variant="outlined"
-                    size="small"
-                    sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1, '& .MuiInputLabel-root': { color: '#8B949E' } }}
-                />
-                <TextField
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    label="Description"
-                    variant="outlined"
-                    size="small"
-                    sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1, '& .MuiInputLabel-root': { color: '#8B949E' }}}
-                />
-                <Select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                    size="small"
-                    sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1 }}
-                >
-                    {priorities.map(p => (
-                        <MenuItem key={p} value={p}>{p}</MenuItem>
-                    ))}
+                <TextField value={title} onChange={(e) => setTitle(e.target.value)} label="Title" variant="outlined" size="small" sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1, '& .MuiInputLabel-root': { color: '#8B949E' } }} />
+                <TextField value={description} onChange={(e) => setDescription(e.target.value)} label="Description" variant="outlined" size="small" sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1, '& .MuiInputLabel-root': { color: '#8B949E' } }} />
+                <Select value={priority} onChange={(e) => setPriority(e.target.value)} size="small" sx={{ backgroundColor: '#20232A', color: '#C9D1D9', borderRadius: 1 }}>
+                    {priorities.map(p => (<MenuItem key={p} value={p}>{p}</MenuItem>))}
                 </Select>
-                <Button type="submit" variant="contained" sx={{ backgroundColor: '#28A745', color: '#fff', marginRight: 'auto' }}>
-                    Add Task
-                </Button>
-                <Button variant="outlined" sx={{ color: '#C9D1D9', borderColor: '#C9D1D9', marginRight: 2 }} onClick={() => setViewMode('status')}>
-                    View by Status
-                </Button>
-                <Button variant="outlined" sx={{ color: '#C9D1D9', borderColor: '#C9D1D9' }} onClick={() => setViewMode('priority')}>
-                    View by Priority
-                </Button>
+                <Button type="submit" variant="contained" sx={{ backgroundColor: '#28A745', color: '#fff', marginRight: 'auto' }}>Add Task</Button>
+                <Button variant="outlined" sx={{ color: '#C9D1D9', borderColor: '#C9D1D9', marginRight: 2 }} onClick={() => setViewMode('status')}>View by Status</Button>
+                <Button variant="outlined" sx={{ color: '#C9D1D9', borderColor: '#C9D1D9' }} onClick={() => setViewMode('priority')}>View by Priority</Button>
             </form>
-
-            <Box display="flex" gap={2}>
-                {viewMode === 'status' ? TaskList(groupedTasksByStatus, statuses, 'status') : TaskList(groupedTasksByPriority, priorities, 'priority')}
-            </Box>
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <Box display="flex" gap={2}>
+                    {viewMode === 'status' ? TaskList(groupedTasksByStatus, statuses, 'status') : TaskList(groupedTasksByPriority, priorities, 'priority')}
+                </Box>
+            </DragDropContext>
         </Box>
     );
 };
