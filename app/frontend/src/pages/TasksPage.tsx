@@ -26,10 +26,20 @@ const TasksPage: React.FC = () => {
         refreshData();
     }, []);
 
+    const refreshData = async () => {
+        await fetchTasks();
+        await fetchGroupedTasksByStatus();
+        await fetchGroupedTasksByPriority();
+    };
+
     const fetchTasks = async () => {
         try {
             const response = await api.get('/tasks');
-            setTasks(response.data);
+            const transformedTasks = response.data.map((task: any) => ({
+                id: task.ID,
+                ...task,
+            }));
+            setTasks(transformedTasks);
         } catch (error) {
             console.error('Fetch tasks error:', error);
         }
@@ -50,7 +60,11 @@ const TasksPage: React.FC = () => {
     const fetchGroupedTasksByStatus = async () => {
         try {
             const response = await api.get('/tasks/grouped/status');
-            setGroupedTasksByStatus(response.data);
+            const transformedTasks = response.data.map((task: any) => ({
+                id: task.ID,
+                ...task,
+            }));
+            setGroupedTasksByStatus(transformedTasks);
         } catch (error) {
             console.error('Fetch grouped tasks by status error:', error);
         }
@@ -59,7 +73,11 @@ const TasksPage: React.FC = () => {
     const fetchGroupedTasksByPriority = async () => {
         try {
             const response = await api.get('/tasks/grouped/priority');
-            setGroupedTasksByPriority(response.data);
+            const transformedTasks = response.data.map((task: any) => ({
+                id: task.ID,
+                ...task,
+            }));
+            setGroupedTasksByPriority(transformedTasks);
         } catch (error) {
             console.error('Fetch grouped tasks by priority error:', error);
         }
@@ -105,10 +123,6 @@ const TasksPage: React.FC = () => {
         }
     };
 
-    const refreshData = async () => {
-        await fetchTasks();
-        await fetchGroupedTasksByStatus();
-        await fetchGroupedTasksByPriority();
     };
 
     const TaskList = (data: { [key: string]: Task[] }, keys: string[], field: 'status' | 'priority') =>
