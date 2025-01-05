@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Button, Card, CardContent, Typography, TextField, Select, MenuItem, Box, Paper } from '@mui/material';
-import {DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided} from 'react-beautiful-dnd';
+import {DragDropContext, Droppable, Draggable, DroppableProvided, DraggableProvided} from '@hello-pangea/dnd';
 
 interface Task {
     id: number;
