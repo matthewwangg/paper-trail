@@ -60,11 +60,16 @@ const TasksPage: React.FC = () => {
     const fetchGroupedTasksByStatus = async () => {
         try {
             const response = await api.get('/tasks/grouped/status');
-            const transformedTasks = response.data.map((task: any) => ({
-                id: task.ID,
-                ...task,
-            }));
-            setGroupedTasksByStatus(transformedTasks);
+            const transformedGroups = Object.fromEntries(
+                Object.entries(response.data).map(([key, tasks]) => [
+                    key,
+                    (tasks as any).map((task: any) => ({
+                        id: task.ID,
+                        ...task
+                    }))
+                ])
+            );
+            setGroupedTasksByStatus(transformedGroups);
         } catch (error) {
             console.error('Fetch grouped tasks by status error:', error);
         }
@@ -73,11 +78,16 @@ const TasksPage: React.FC = () => {
     const fetchGroupedTasksByPriority = async () => {
         try {
             const response = await api.get('/tasks/grouped/priority');
-            const transformedTasks = response.data.map((task: any) => ({
-                id: task.ID,
-                ...task,
-            }));
-            setGroupedTasksByPriority(transformedTasks);
+            const transformedGroups = Object.fromEntries(
+                Object.entries(response.data).map(([key, tasks]) => [
+                    key,
+                    (tasks as any).map((task: any) => ({
+                        id: task.ID,
+                        ...task
+                    }))
+                ])
+            );
+            setGroupedTasksByPriority(transformedGroups);
         } catch (error) {
             console.error('Fetch grouped tasks by priority error:', error);
         }
