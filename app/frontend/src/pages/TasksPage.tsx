@@ -125,6 +125,15 @@ const TasksPage: React.FC = () => {
         }
     };
 
+    const handleUpdateTaskPriority = async (id: number, priority: string) => {
+        try {
+            await api.put(`/tasks/${id}/priority`, { priority });
+            await refreshData();
+        } catch (error) {
+            console.error('Update task status error:', error);
+        }
+    };
+
     const handleDeleteTask = async (id: number) => {
         try {
             await api.delete(`/tasks/${id}`);
@@ -136,32 +145,31 @@ const TasksPage: React.FC = () => {
 
     const handleDragEnd = async (result: any) => {
         const { source, destination, draggableId } = result;
+        if (!destination || source.droppableId === destination.droppableId) return;
 
-        // Check if the destination exists and is different from the source
-        if (!destination || source.droppableId === destination.droppableId) {
-            return;
-        }
-
-        // Parse the task ID from the draggableId
         const taskId = parseInt(draggableId, 10);
-        if (isNaN(taskId)) {
-            console.error("Invalid task ID:", draggableId);
-            return;
-        }
+        if (isNaN(taskId)) return console.error("Invalid task ID:", draggableId);
 
         try {
             const fieldToUpdate = viewMode === "status" ? "status" : "priority";
-            const newValue = destination.droppableId;
+            const taskToUpdate = tasks.find((task) => task.id === taskId);
 
-            await api.put(`/tasks/${taskId}`, {
-                [fieldToUpdate]: newValue,
-            });
+            if (!taskToUpdate) return console.error("Task not found:", taskId);
 
-            await refreshData();
+            const updatedTask = { ...taskToUpdate, [fieldToUpdate]: destination.droppableId };
+            await api.put(`/tasks/${taskId}`, updatedTask);
+
+            setTasks((prev) =>
+                prev.map((task) => (task.id === taskId ? updatedTask : task))
+            );
+
+            if (viewMode === "status") fetchGroupedTasksByStatus();
+            else fetchGroupedTasksByPriority();
         } catch (error) {
-            console.error("Error updating task on drag end:", error);
+            console.error("Error updating task:", error);
         }
     };
+
 
     const TaskList = (data: { [key: string]: Task[] }, keys: string[], field: 'status' | 'priority') =>
         keys.map((key) => (
@@ -176,11 +184,12 @@ const TasksPage: React.FC = () => {
                                         <CardContent>
                                             <Typography variant="subtitle1" sx={{ color: '#C9D1D9' }}>{task.title}</Typography>
                                             <Typography variant="body2" sx={{ color: '#8B949E' }}>{task.description}</Typography>
-                                            <Typography variant="caption" sx={{ color: '#79C0FF' }}>Priority: {task.priority}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#79C0FF', display: 'block' }}>Priority: {task.priority}</Typography>
+                                            <Typography variant="caption" sx={{ color: '#79C0FF', display: 'block' }}>Status: {task.status}</Typography>
                                             <Box mt={1} display="flex" gap={1}>
                                                 <Button size="small" variant="outlined" sx={{ color: '#FF7B72', borderColor: '#FF7B72' }} onClick={() => handleDeleteTask(task.id)}>Delete</Button>
                                                 {(field === 'status' ? statuses : priorities).map((val) => (
-                                                    <Button key={val} size="small" variant="contained" disabled={val === task[field]} sx={{ backgroundColor: val === task[field] ? '#30363D' : '#28A745', color: '#fff' }} onClick={() => handleUpdateTaskStatus(task.id, val)}>
+                                                    <Button key={val} size="small" variant="contained" disabled={val === task[field]} sx={{ backgroundColor: val === task[field] ? '#30363D' : '#28A745', color: '#fff' }} onClick={() => field === 'status' ? handleUpdateTaskStatus(task.id, val) : handleUpdateTaskPriority(task.id, val)}>
                                                         {field === 'status' ? `Move to ${val}` : `Set Priority ${val}`}
                                                     </Button>
                                                 ))}
