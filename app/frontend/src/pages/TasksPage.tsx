@@ -163,7 +163,6 @@ const TasksPage: React.FC = () => {
         }
     };
 
-
     const TaskList = (data: { [key: string]: Task[] }, keys: string[], field: 'status' | 'priority') =>
         keys.map((key) => (
             <Droppable droppableId={key.trim()} key={key.trim()} type="group">

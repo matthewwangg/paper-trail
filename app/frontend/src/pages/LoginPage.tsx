@@ -10,13 +10,12 @@ const LoginPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [loginFailed, setLoginFailed] = useState(false);
     const navigate = useNavigate();
-    const API_URL = 'http://localhost:8080';
 
     const handleLogin = async () => {
         setLoading(true);
         setLoginFailed(false);
         try {
-            const response = await axios.post(`${API_URL}/auth/login`, { username, password });
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, { username, password });
             localStorage.setItem('token', response.data.token);
             navigate('/notes');
         } catch {

@@ -9,12 +9,11 @@ const SignupPage: React.FC = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const API_URL = 'http://localhost:8080';
 
     const handleSignup = async () => {
         setLoading(true);
         try {
-            await axios.post(`${API_URL}/auth/register`, { username, password });
+            await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, { username, password });
             alert('Registration successful. Please login.');
             navigate('/login');
         } catch {
