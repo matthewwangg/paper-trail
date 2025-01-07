@@ -16,5 +16,6 @@ func SetupAuthRoutes(router *gin.Engine) {
 	{
 		//auth.POST("/register", tollbooth_gin.LimitHandler(limiter), handlers.Register)
 		auth.POST("/login", tollbooth_gin.LimitHandler(limiter), handlers.Login)
+		auth.POST("/refresh", tollbooth_gin.LimitHandler(limiter), handlers.Refresh)
 	}
 }
