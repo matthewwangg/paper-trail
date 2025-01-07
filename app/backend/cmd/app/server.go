@@ -7,6 +7,7 @@ import (
 	"github.com/matthewwangg/papertrail-backend/internal/routes"
 	"github.com/matthewwangg/papertrail-backend/pkg/logger"
 	"github.com/matthewwangg/papertrail-backend/pkg/validator"
+	"os"
 	"time"
 )
 
@@ -28,12 +29,27 @@ func StartServer() {
 	// Apply the logging middleware
 	router.Use(logger.GinLogger())
 
+	allowOrigins := []string{"http://localhost:3000"}
+	if env := os.Getenv("ENV"); env == "production" {
+		allowOrigins = []string{"https://your-production-domain.com"}
+	}
+
 	// Apply CORS middleware
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Authorization", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowOrigins: allowOrigins,
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{
+			"Authorization",
+			"Content-Type",
+			"Accept",
+			"Origin",
+			"X-Requested-With",
+			"X-Custom-Header",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+			"Authorization",
+		},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))

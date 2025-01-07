@@ -17,7 +17,7 @@ const SignupPage: React.FC = () => {
             alert('Registration successful. Please login.');
             navigate('/login');
         } catch {
-            alert('Registration failed.');
+            alert('Registration has been temporarily disabled, please contact the developer.');
         } finally {
             setLoading(false);
         }
