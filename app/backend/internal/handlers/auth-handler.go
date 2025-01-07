@@ -4,6 +4,7 @@ import (
 	"github.com/matthewwangg/papertrail-backend/internal/database"
 	"github.com/matthewwangg/papertrail-backend/internal/models"
 	"github.com/matthewwangg/papertrail-backend/pkg/logger"
+	"github.com/matthewwangg/papertrail-backend/pkg/refresh"
 	"net/http"
 	"os"
 	"time"
@@ -79,7 +80,7 @@ func Login(c *gin.Context) {
 	}
 
 	// Create JWT token
-	expirationTime := time.Now().Add(24 * time.Hour)
+	expirationTime := time.Now().Add(15 * time.Minute)
 	claims := &models.Claims{
 		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -94,5 +95,19 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	// Generate Refresh Token
+	refreshToken, err := refresh.GenerateRefreshToken()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating refresh token"})
+		return
+	}
+
+	// Save refresh token in the database
+	user.RefreshToken = refreshToken
+	database.DB.Save(&user)
+
+	c.JSON(http.StatusOK, gin.H{
+		"token":         tokenString,
+		"refresh_token": refreshToken,
+	})
 }
