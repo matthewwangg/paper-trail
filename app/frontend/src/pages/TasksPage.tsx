@@ -183,8 +183,7 @@ const TasksPage: React.FC = () => {
                                     <Card ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} sx={{ marginBottom: 1, backgroundColor: '#21262D', borderRadius: 1, boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)' }}>
                                         <CardContent>
                                             <Typography variant="subtitle1" sx={{ color: '#C9D1D9' }}>{task.title}</Typography>
-                                            <Typography variant="body2" sx={{ color: '#8B949E' }}>{task.description}</Typography>
-                                            <Typography variant="caption" sx={{ color: '#79C0FF', display: 'block' }}>Priority: {task.priority}</Typography>
+                                            <Typography variant="body2" sx={{ color: '#8B949E', wordBreak: 'break-word', whiteSpace: 'normal', maxWidth: '100%', display: 'block' }}>{task.description}</Typography>                                            <Typography variant="caption" sx={{ color: '#79C0FF', display: 'block' }}>Priority: {task.priority}</Typography>
                                             <Typography variant="caption" sx={{ color: '#79C0FF', display: 'block' }}>Status: {task.status}</Typography>
                                             <Box mt={1} display="flex" gap={1}>
                                                 <Button size="small" variant="outlined" sx={{ color: '#FF7B72', borderColor: '#FF7B72' }} onClick={() => handleDeleteTask(task.id)}>Delete</Button>

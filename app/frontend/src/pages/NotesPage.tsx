@@ -82,7 +82,7 @@ const NotesPage: React.FC = () => {
 
     return (
         <Box sx={{ p: 4, backgroundColor: 'black', minHeight: '100vh' }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, 300px)', gap: 2, justifyContent: notes.length ? 'flex-start' : 'center' }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
                 {notes.length ? (
                     notes.map((note, index) => (
                         <Card
