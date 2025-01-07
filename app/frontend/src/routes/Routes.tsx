@@ -5,10 +5,13 @@ import SignupPage from '../pages/SignUpPage';
 import ProtectedRoute from "./ProtectedRoutes";
 import NotesPage from "../pages/NotesPage";
 import TasksPage from "../pages/TasksPage";
+import NavBar from "../components/NavBar";
+
 
 const AppRoutes: React.FC = () => {
     return (
         <Router>
+            <NavBar/>
             <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
