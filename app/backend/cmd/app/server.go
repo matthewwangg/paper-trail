@@ -29,9 +29,9 @@ func StartServer() {
 	// Apply the logging middleware
 	router.Use(logger.GinLogger())
 
-	allowOrigins := []string{"http://localhost:3000"}
+	allowOrigins := []string{os.Getenv("DEV_ALLOW_ORIGINS")}
 	if env := os.Getenv("ENV"); env == "production" {
-		allowOrigins = []string{"https://your-production-domain.com"}
+		allowOrigins = []string{"PROD_ALLOW_ORIGINS"}
 	}
 
 	// Apply CORS middleware
